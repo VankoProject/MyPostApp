@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
@@ -18,11 +19,12 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.example.mypostapp.R
+import kotlinx.coroutines.launch
 
 
 class HomeFragment : Fragment() {
-
 
     @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
     override fun onCreateView(
@@ -31,23 +33,28 @@ class HomeFragment : Fragment() {
     ): View {
         return ComposeView(requireContext()).apply {
             setContent {
+                val snackbarHostState = remember {
+                    SnackbarHostState()
+                }
                 Scaffold(
+                    snackbarHost = {
+                        SnackbarHost(hostState = snackbarHostState)
+                    },
                     topBar = {
                         TopAppBar()
                     },
                     floatingActionButton = {
-                        Fab()
+                        Fab {
+                            lifecycleScope.launch {
+                                snackbarHostState.showSnackbar("Hello")
+                            }
+                        }
                     },
                     floatingActionButtonPosition = FabPosition.End
                 ) {
                     Column(
                         modifier = Modifier.fillMaxSize()
                     ) {
-                        NoteCard()
-                        NoteCard()
-                        NoteCard()
-                        NoteCard()
-                        NoteCard()
                         NoteCard()
                     }
                 }
@@ -89,13 +96,13 @@ fun TopAppBar() {
 }
 
 @Composable
-fun Fab() {
+fun Fab(clickListener: () -> Unit) {
     val appColor = colorResource(id = R.color.violet)
     FloatingActionButton(
         modifier = Modifier
             .padding(16.dp),
         onClick = {
-
+            clickListener()
         },
         contentColor = Color.White,
         backgroundColor = appColor,
