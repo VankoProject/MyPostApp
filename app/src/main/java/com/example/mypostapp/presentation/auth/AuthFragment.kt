@@ -86,7 +86,6 @@ class AuthFragment : Fragment(R.layout.fragment_auth) {
 
                     enterButton.isEnabled = isValidEmail && isValidPassword
                 }
-
             }
         }
     }
