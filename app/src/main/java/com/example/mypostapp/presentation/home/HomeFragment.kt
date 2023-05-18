@@ -6,11 +6,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -19,12 +22,15 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.example.mypostapp.R
 import kotlinx.coroutines.launch
 
 
 class HomeFragment : Fragment() {
+
+    private val viewModel by viewModels<HomeViewModel>()
 
     @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
     override fun onCreateView(
@@ -41,7 +47,7 @@ class HomeFragment : Fragment() {
                         SnackbarHost(hostState = snackbarHostState)
                     },
                     topBar = {
-                        TopAppBar()
+                        HomeTopAppBar()
                     },
                     floatingActionButton = {
                         Fab {
@@ -52,10 +58,19 @@ class HomeFragment : Fragment() {
                     },
                     floatingActionButtonPosition = FabPosition.End
                 ) {
-                    Column(
+                    val currentList = viewModel.postModels.observeAsState(listOf())
+                    LazyColumn(
                         modifier = Modifier.fillMaxSize()
                     ) {
-                        NoteCard()
+                        items(currentList.value) { model ->
+                            NoteCard(
+                                model = model,
+                                onClick = {
+                                    lifecycleScope.launch {
+                                        snackbarHostState.showSnackbar("Hello from LazyColumn")
+                                    }
+                                })
+                        }
                     }
                 }
             }
@@ -64,9 +79,10 @@ class HomeFragment : Fragment() {
 }
 
 @Composable
-fun TopAppBar() {
+fun HomeTopAppBar() {
     val appColor = colorResource(id = R.color.violet)
     TopAppBar(
+        contentColor = Color.White,
         title = {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -74,7 +90,6 @@ fun TopAppBar() {
             ) {
                 Text(
                     text = "My posts",
-                    color = Color.White,
                     overflow = TextOverflow.Ellipsis,
                     maxLines = 1
                 )

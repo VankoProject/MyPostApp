@@ -1,6 +1,7 @@
 package com.example.mypostapp.presentation.home
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
@@ -12,25 +13,27 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.mypostapp.R
+import com.example.mypostapp.presentation.model.PostModel
 
-@Preview
+
 @Composable
-fun NoteCard() {
+fun NoteCard(
+    model: PostModel,
+    onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .height(80.dp)
             .padding(start = 24.dp)
             .padding(end = 24.dp)
-            .padding(top = 18.dp),
-        backgroundColor = Color.LightGray,
+            .padding(top = 18.dp)
+            .clickable(onClick = onClick),
+        backgroundColor = model.color,
         shape = RoundedCornerShape(16.dp),
         contentColor = Color.Black,
-        elevation = 8.dp
+        elevation = 8.dp,
     ) {
         Row(
             modifier = Modifier
@@ -38,21 +41,18 @@ fun NoteCard() {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start
         ) {
-            ImageNote()
+            ImageNote(postModel = model)
             Spacer(modifier = Modifier.width(16.dp))
-            NoteData(
-                title = "It is the post of this list with some notes",
-                date = "19:38 am 09.10.2023"
-            )
+            NoteData(postModel = model)
         }
     }
 }
 
 
 @Composable
-fun ImageNote() {
+fun ImageNote(postModel: PostModel) {
     Image(
-        painter = painterResource(id = R.drawable.image_note),
+        painter = painterResource(id = postModel.image),
         contentDescription = null,
         contentScale = ContentScale.Fit
     )
@@ -61,8 +61,7 @@ fun ImageNote() {
 
 @Composable
 fun NoteData(
-    title: String,
-    date: String
+    postModel: PostModel
 ) {
     Column(
         modifier = Modifier
@@ -74,7 +73,7 @@ fun NoteData(
             )
     ) {
         Text(
-            text = title,
+            text = postModel.description,
             fontSize = 12.sp,
             fontWeight = FontWeight.Normal,
             modifier = Modifier
@@ -87,7 +86,7 @@ fun NoteData(
             horizontalArrangement = Arrangement.End
         ) {
             Text(
-                text = date,
+                text = postModel.date.toString(),
                 fontSize = 8.sp,
                 fontWeight = FontWeight.Normal
             )
