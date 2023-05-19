@@ -19,7 +19,7 @@ import com.example.mypostapp.presentation.model.PostModel
 
 
 @Composable
-fun NoteCard(
+fun ItemNoteCard(
     model: PostModel,
     onClick: () -> Unit) {
     Card(
@@ -41,16 +41,16 @@ fun NoteCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start
         ) {
-            ImageNote(postModel = model)
+            ItemImageNote(postModel = model)
             Spacer(modifier = Modifier.width(16.dp))
-            NoteData(postModel = model)
+            ItemNoteData(postModel = model)
         }
     }
 }
 
 
 @Composable
-fun ImageNote(postModel: PostModel) {
+fun ItemImageNote(postModel: PostModel) {
     Image(
         painter = painterResource(id = postModel.image),
         contentDescription = null,
@@ -60,7 +60,7 @@ fun ImageNote(postModel: PostModel) {
 
 
 @Composable
-fun NoteData(
+fun ItemNoteData(
     postModel: PostModel
 ) {
     Column(

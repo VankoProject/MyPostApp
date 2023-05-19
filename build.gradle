@@ -7,9 +7,10 @@ buildscript {
     }
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "androidx.navigation:navigation-safe-args-gradle-plugin:2.6.0-alpha06"
     }
     ext {
-        compose_ui_version = '1.4.0'
+        compose_ui_version = '1.4.2'
     }
 }
 

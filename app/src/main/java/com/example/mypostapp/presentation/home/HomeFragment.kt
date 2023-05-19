@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.findNavController
 import com.example.mypostapp.R
 import kotlinx.coroutines.launch
 
@@ -63,12 +64,11 @@ class HomeFragment : Fragment() {
                         modifier = Modifier.fillMaxSize()
                     ) {
                         items(currentList.value) { model ->
-                            NoteCard(
+                            ItemNoteCard(
                                 model = model,
                                 onClick = {
-                                    lifecycleScope.launch {
-                                        snackbarHostState.showSnackbar("Hello from LazyColumn")
-                                    }
+                                    val direction = HomeFragmentDirections.actionHomeFragmentToDetailFragment(postId = model.id)
+                                    findNavController().navigate(direction)
                                 })
                         }
                     }

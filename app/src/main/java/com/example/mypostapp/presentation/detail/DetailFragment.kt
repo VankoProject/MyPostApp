@@ -18,8 +18,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.fragment.app.Fragment
+import androidx.navigation.findNavController
 import com.example.mypostapp.R
 
 
@@ -35,7 +35,14 @@ class DetailFragment : Fragment() {
             setContent {
                 Scaffold(
                     topBar = {
-
+                        DetailTopAppBar(
+                            onBackButtonClick = {
+                                findNavController().navigate(R.id.action_detailFragment_to_homeFragment)
+                            },
+                            onAddButtonClick = {
+                                TODO("add post to database")
+                            }
+                        )
                     }
                 ) {
 
@@ -45,9 +52,11 @@ class DetailFragment : Fragment() {
     }
 }
 
-@Preview
 @Composable
-private fun DetailTopAppBar() {
+private fun DetailTopAppBar(
+    onBackButtonClick: () -> Unit,
+    onAddButtonClick: () -> Unit
+) {
     val appColor = colorResource(id = R.color.violet)
     TopAppBar(
         backgroundColor = appColor,
@@ -66,14 +75,19 @@ private fun DetailTopAppBar() {
 
         },
         navigationIcon = {
-            IconButton(onClick = { }) {
+            IconButton(onClick = {
+                onBackButtonClick()
+            }) {
                 Icon(Icons.Filled.ArrowBack, contentDescription = null)
             }
         },
         actions = {
-            IconButton(onClick = {}) {
+            IconButton(onClick = {
+                onAddButtonClick()
+            }) {
                 Icon(Icons.Filled.Check, contentDescription = null)
             }
         }
     )
 }
+
