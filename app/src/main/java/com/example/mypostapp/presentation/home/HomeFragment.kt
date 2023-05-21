@@ -61,18 +61,27 @@ class HomeFragment : Fragment() {
                 ) {
                     val currentList = viewModel.postModels.observeAsState(listOf())
                     LazyColumn(
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier
+                            .fillMaxWidth()
                     ) {
                         items(currentList.value) { model ->
                             ItemNoteCard(
-                                model = model,
+                                postModel = model,
                                 onClick = {
-                                    val direction = HomeFragmentDirections.actionHomeFragmentToDetailFragment(postId = model.id)
+                                    val direction =
+                                        HomeFragmentDirections.actionHomeFragmentToDetailFragment(
+                                            postId = model.id
+                                        )
                                     findNavController().navigate(direction)
                                 })
                         }
                     }
                 }
+                Spacer(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(16.dp)
+                )
             }
         }
     }

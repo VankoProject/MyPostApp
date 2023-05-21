@@ -13,14 +13,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.mypostapp.presentation.model.PostModel
+import java.util.*
 
 
 @Composable
 fun ItemNoteCard(
-    model: PostModel,
+    postModel: PostModel,
     onClick: () -> Unit) {
     Card(
         modifier = Modifier
@@ -30,10 +32,10 @@ fun ItemNoteCard(
             .padding(end = 24.dp)
             .padding(top = 18.dp)
             .clickable(onClick = onClick),
-        backgroundColor = model.color,
+        backgroundColor = postModel.color,
         shape = RoundedCornerShape(16.dp),
         contentColor = Color.Black,
-        elevation = 8.dp,
+        elevation = 2.dp
     ) {
         Row(
             modifier = Modifier
@@ -41,9 +43,9 @@ fun ItemNoteCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start
         ) {
-            ItemImageNote(postModel = model)
+            ItemImageNote(postModel = postModel)
             Spacer(modifier = Modifier.width(16.dp))
-            ItemNoteData(postModel = model)
+            ItemNoteData(postModel = postModel)
         }
     }
 }
@@ -63,6 +65,7 @@ fun ItemImageNote(postModel: PostModel) {
 fun ItemNoteData(
     postModel: PostModel
 ) {
+    val currentDate = Date()
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -74,11 +77,12 @@ fun ItemNoteData(
     ) {
         Text(
             text = postModel.description,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Normal,
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Light,
             modifier = Modifier
                 .fillMaxWidth(),
-            maxLines = 2
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis
         )
         Row(
             modifier = Modifier.fillMaxSize(),
@@ -86,7 +90,7 @@ fun ItemNoteData(
             horizontalArrangement = Arrangement.End
         ) {
             Text(
-                text = postModel.date.toString(),
+                text = postModel.date.format(currentDate),
                 fontSize = 8.sp,
                 fontWeight = FontWeight.Normal
             )

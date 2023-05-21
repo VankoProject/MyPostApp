@@ -3,6 +3,7 @@ package com.example.mypostapp.presentation.model
 import androidx.compose.ui.graphics.Color
 import java.text.SimpleDateFormat
 
+
 data class PostModel(
     val id: Int,
     val description: String,
@@ -10,3 +11,12 @@ data class PostModel(
     val color: Color,
     val date: SimpleDateFormat
 )
+
+enum class SetColor() {
+    RED,
+    BLUE,
+    GREEN,
+    YELLOW,
+    GREY
+}
+
