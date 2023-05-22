@@ -25,24 +25,17 @@ fun ItemNoteCard(
     postModel: PostModel,
     onClick: () -> Unit) {
     Card(
+        backgroundColor = postModel.color,
         modifier = Modifier
             .fillMaxWidth()
             .height(80.dp)
-            .padding(start = 24.dp)
-            .padding(end = 24.dp)
-            .padding(top = 18.dp)
             .clickable(onClick = onClick),
-        backgroundColor = postModel.color,
+
         shape = RoundedCornerShape(16.dp),
         contentColor = Color.Black,
         elevation = 2.dp
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxSize(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Start
-        ) {
+        Row {
             ItemImageNote(postModel = postModel)
             Spacer(modifier = Modifier.width(16.dp))
             ItemNoteData(postModel = postModel)

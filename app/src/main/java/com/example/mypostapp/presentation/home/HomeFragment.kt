@@ -10,7 +10,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
@@ -61,6 +61,13 @@ class HomeFragment : Fragment() {
                 ) {
                     val currentList = viewModel.postModels.observeAsState(listOf())
                     LazyColumn(
+                        contentPadding = PaddingValues(
+                            top = 16.dp,
+                            start = 24.dp,
+                            end = 24.dp,
+                            bottom = 16.dp
+                        ),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
                         modifier = Modifier
                             .fillMaxWidth()
                     ) {
@@ -131,7 +138,7 @@ fun Fab(clickListener: () -> Unit) {
         contentColor = Color.White,
         backgroundColor = appColor,
         content = {
-            Icon(imageVector = Icons.Filled.Add, contentDescription = "Add")
+            Icon(imageVector = Icons.Filled.Create, contentDescription = "Add")
         }
     )
 }

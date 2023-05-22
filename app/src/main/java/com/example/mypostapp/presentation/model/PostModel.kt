@@ -12,7 +12,7 @@ data class PostModel(
     val date: SimpleDateFormat
 )
 
-enum class SetColor() {
+enum class PostColor() {
     RED,
     BLUE,
     GREEN,

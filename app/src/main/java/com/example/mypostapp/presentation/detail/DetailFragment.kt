@@ -10,29 +10,28 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import com.example.mypostapp.R
-import com.example.mypostapp.presentation.model.SetColor
+import com.example.mypostapp.presentation.model.PostColor
+import kotlinx.coroutines.launch
 
 
 class DetailFragment : Fragment() {
@@ -44,25 +43,40 @@ class DetailFragment : Fragment() {
     ): View {
         return ComposeView(requireContext()).apply {
             setContent {
-                var selectedColor by remember { mutableStateOf(SetColor.RED) }
-                var expandedState by remember { mutableStateOf(false) }
-                val colors = SetColor.values()
+                val colorItems = PostColor.values()
+                var selectedColor by remember { mutableStateOf(colorItems[0]) }
+                var expanded by remember { mutableStateOf(false) }
                 var noteText by remember { mutableStateOf("") }
 
+                val snackbarHostState = remember {
+                    SnackbarHostState()
+                }
+
                 Scaffold(
+                    snackbarHost = {
+                        SnackbarHost(hostState = snackbarHostState)
+                    },
                     topBar = {
                         DetailTopAppBar(
                             onBackButtonClick = {
-                                findNavController().navigate(R.id.action_detailFragment_to_homeFragment)
+                                lifecycleScope.launch {
+                                   val action = snackbarHostState.showSnackbar(
+                                        message = "Do you want to save post?",
+                                        actionLabel = "Save post",
+                                        duration = SnackbarDuration.Long)
+                                    if (action == SnackbarResult.ActionPerformed) {
+                                        findNavController().navigate(R.id.action_detailFragment_to_homeFragment)
+                                    }
+                                }
                             },
                             onAddButtonClick = {
-                                TODO("add post to database")
+
                             }
                         )
                     }
                 ) {
                     Column(
-                        modifier = Modifier.padding(16.dp)
+                        modifier = Modifier.padding(16.dp),
                     ) {
                         Box(
                             modifier = Modifier
@@ -75,32 +89,92 @@ class DetailFragment : Fragment() {
                             }
                         }
                         Spacer(modifier = Modifier.padding(bottom = 16.dp))
-                        Text(
-                            text = "Select background color for your post",
-                            modifier = Modifier.fillMaxWidth(),
-                            fontFamily = FontFamily.Default.apply {
-                                R.font.roboto_light
-                            },
-                            fontSize = 16.sp
-                        )
-                        Spacer(modifier = Modifier.padding(bottom = 8.dp))
-                        SelectColorForPost(
-                            selectedColor = selectedColor,
-                            onColorSelected = { color -> selectedColor = color },
-                            expanded = expandedState,
-                            onExpandedChange = { expandedState = it },
-                            colors = colors,
-                        )
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = "Select background color for your post",
+                                fontFamily = FontFamily.SansSerif,
+                                fontWeight = FontWeight.Light
+                            )
+                            Spacer(modifier = Modifier.padding(bottom = 8.dp))
+                            SelectColorForPost(
+                                selectedColor = selectedColor,
+                                onColorSelected = { color -> selectedColor = color },
+                                expanded = expanded,
+                                onExpandedChange = { expanded = it },
+                                colorItems = colorItems
+                            )
+                        }
                         Spacer(modifier = Modifier.padding(bottom = 16.dp))
                         NoteInput(onNoteEntered = { note ->
                             noteText = note
                         })
                         Spacer(modifier = Modifier.padding(bottom = 16.dp))
-
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun SelectColorForPost(
+    selectedColor: PostColor,
+    onColorSelected: (PostColor) -> Unit,
+    expanded: Boolean,
+    onExpandedChange: (Boolean) -> Unit,
+    colorItems: Array<PostColor>,
+) {
+    val icon = if (expanded)
+        Icons.Filled.KeyboardArrowUp
+    else
+        Icons.Filled.KeyboardArrowDown
+
+    Box {
+        OutlinedTextField(
+            value = TextFieldValue(text = selectedColor.name),
+            onValueChange = {},
+            readOnly = true,
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(color = getColor(color = selectedColor)),
+            trailingIcon = {
+                Icon(icon, null, Modifier.clickable {
+                    onExpandedChange(!expanded)
+                })
+            },
+        )
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { onExpandedChange(false) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    start = 16.dp,
+                    end = 16.dp
+                )
+        ) {
+            colorItems.forEach { colorItem ->
+                DropdownMenuItem(
+                    onClick = {
+                        onColorSelected(colorItem)
+                        onExpandedChange(false)
+                    }
+                ) {
+                    Text(text = colorItem.name)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun getColor(color: PostColor): Color {
+    return when (color) {
+        PostColor.RED -> Color.Red.copy(alpha = 0.5f)
+        PostColor.GREEN -> Color.Green.copy(alpha = 0.5f)
+        PostColor.BLUE -> Color.Blue.copy(alpha = 0.5f)
+        PostColor.GREY -> Color.Gray.copy(alpha = 0.5f)
+        PostColor.YELLOW -> Color.Yellow.copy(alpha = 0.5f)
     }
 }
 
@@ -144,70 +218,6 @@ private fun DetailTopAppBar(
     )
 }
 
-@Composable
-private fun SelectColorForPost(
-    selectedColor: SetColor?,
-    onColorSelected: (SetColor) -> Unit,
-    expanded: Boolean,
-    onExpandedChange: (Boolean) -> Unit,
-    colors: Array<SetColor>,
-) {
-    val icon = if (expanded)
-        Icons.Filled.KeyboardArrowUp
-    else
-        Icons.Filled.KeyboardArrowDown
-
-    Box {
-        OutlinedTextField(
-            value = TextFieldValue(text = selectedColor?.name ?: "Select color"),
-            onValueChange = {},
-            readOnly = true,
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(color = getColor(color = selectedColor!!)),
-            trailingIcon = {
-                Icon(icon, null, Modifier.clickable {
-                    onExpandedChange(!expanded)
-                })
-            }
-        )
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { onExpandedChange(false) },
-            offset = DpOffset(0.dp, 0.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(
-                    start = 16.dp,
-                    end = 16.dp
-                )
-        ) {
-            colors.forEach { colorItem ->
-                DropdownMenuItem(
-                    onClick = {
-                        onColorSelected(colorItem)
-                        onExpandedChange(false)
-                    },
-                    modifier = Modifier
-                        .background(color = getColor(color = colorItem))
-                ) {
-                    Text(text = colorItem.name)
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun getColor(color: SetColor): Color {
-    return when (color) {
-        SetColor.RED -> Color.Red.copy(alpha = 0.5f)
-        SetColor.GREEN -> Color.Green.copy(alpha = 0.5f)
-        SetColor.BLUE -> Color.Blue.copy(alpha = 0.5f)
-        SetColor.GREY -> Color.Gray.copy(alpha = 0.5f)
-        SetColor.YELLOW -> Color.Yellow.copy(alpha = 0.5f)
-    }
-}
 
 @Composable
 private fun NoteInput(onNoteEntered: (String) -> Unit) {
@@ -215,22 +225,20 @@ private fun NoteInput(onNoteEntered: (String) -> Unit) {
 
     TextField(
         value = noteValue.value,
-        onValueChange = { newValue -> noteValue.value = newValue },
+        onValueChange = { noteValue.value = it },
         modifier = Modifier
-            .fillMaxHeight()
-            .fillMaxWidth()
-            .border(
-                width = 2.dp,
-                color = Color.Black,
-            ),
-        textStyle = TextStyle(color = Color.Black),
-        keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Text,
-            imeAction = ImeAction.Done
+            .fillMaxSize()
+            .border(1.dp, Color.LightGray),
+        textStyle = TextStyle(fontSize = 16.sp),
+        label = { Text("Введите заметку") },
+        singleLine = false,
+        colors = TextFieldDefaults.textFieldColors(
+            backgroundColor = Color.White,
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent
         )
     )
 }
-
 
 
 
