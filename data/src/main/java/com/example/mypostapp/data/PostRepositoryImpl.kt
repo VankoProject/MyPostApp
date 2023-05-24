@@ -1,4 +1,4 @@
-package com.example.mypostapp.data.database
+package com.example.mypostapp.data
 
 import com.example.mypostapp.domain.PostRepository
 import com.example.mypostapp.domain.model.PostModel
