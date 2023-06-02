@@ -2,23 +2,30 @@ package com.example.mypostapp.presentation.detail
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -27,14 +34,20 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
+import coil.compose.AsyncImage
+import coil.compose.rememberImagePainter
 import com.example.mypostapp.R
 import com.example.mypostapp.presentation.model.PostColor
 import kotlinx.coroutines.launch
 
 
 class DetailFragment : Fragment() {
+
+    private val viewModel: DetailViewModel by viewModels()
+
 
     @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
     override fun onCreateView(
@@ -48,9 +61,14 @@ class DetailFragment : Fragment() {
                 var expanded by remember { mutableStateOf(false) }
                 var noteText by remember { mutableStateOf("") }
 
+                val imageList by viewModel.imageItems.collectAsState()
+                val imageUrls = imageList.map { it.imageUrl }
+
+
                 val snackbarHostState = remember {
                     SnackbarHostState()
                 }
+
 
                 Scaffold(
                     snackbarHost = {
@@ -60,10 +78,11 @@ class DetailFragment : Fragment() {
                         DetailTopAppBar(
                             onBackButtonClick = {
                                 lifecycleScope.launch {
-                                   val action = snackbarHostState.showSnackbar(
+                                    val action = snackbarHostState.showSnackbar(
                                         message = "Do you want to save post?",
                                         actionLabel = "Save post",
-                                        duration = SnackbarDuration.Long)
+                                        duration = SnackbarDuration.Long
+                                    )
                                     if (action == SnackbarResult.ActionPerformed) {
                                         findNavController().navigate(R.id.action_detailFragment_to_homeFragment)
                                     }
@@ -82,10 +101,22 @@ class DetailFragment : Fragment() {
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(180.dp)
-                                .background(Color.Red.copy(alpha = 0.5f))
                         ) {
                             LazyRow {
-                                item { }
+                                Log.d("Fragment", "Data")
+                                if (imageUrls.isNotEmpty()) {
+                                    Log.d("Fragment", "$imageUrls")
+                                    items(imageUrls) { image ->
+                                        Log.d("Fragment", "Data3")
+                                        AsyncImage(
+                                            model = image,
+                                            contentDescription = null,
+                                            placeholder = painterResource(R.drawable.image_note),
+                                            contentScale = ContentScale.Fit,
+                                            modifier = Modifier.padding(start = 16.dp, end = 16.dp)
+                                        )
+                                    }
+                                }
                             }
                         }
                         Spacer(modifier = Modifier.padding(bottom = 16.dp))
@@ -115,6 +146,7 @@ class DetailFragment : Fragment() {
         }
     }
 }
+
 
 @Composable
 private fun SelectColorForPost(
@@ -239,6 +271,7 @@ private fun NoteInput(onNoteEntered: (String) -> Unit) {
         )
     )
 }
+
 
 
 

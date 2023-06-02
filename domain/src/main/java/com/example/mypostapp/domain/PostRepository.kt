@@ -1,5 +1,7 @@
 package com.example.mypostapp.domain
 
+import com.example.mypostapp.domain.model.ImageItem
+import com.example.mypostapp.domain.model.Images
 import com.example.mypostapp.domain.model.PostModel
 
 interface PostRepository {
@@ -9,4 +11,6 @@ interface PostRepository {
     suspend fun deletePost(postModel: PostModel)
 
     suspend fun addNewPost(postModel: PostModel)
+
+    suspend fun getImagesData(): List<ImageItem>
 }

@@ -3,7 +3,7 @@ package com.example.mypostapp.domain.model
 data class PostModel(
     val id: Int,
     val description: String,
-    val image: String,
+    val imageUrl: String,
     val color: PostColor,
     val date: Long
 )

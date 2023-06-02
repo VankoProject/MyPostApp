@@ -16,12 +16,14 @@ object ApiFactory {
         .addInterceptor(loggingInterceptor)
         .build()
 
-    fun createRetrofit(): Retrofit {
+    private fun createRetrofit(): Retrofit {
         return Retrofit.Builder()
             .baseUrl(BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
+
+    val apiService: ApiService = createRetrofit().create(ApiService::class.java)
 
 }
