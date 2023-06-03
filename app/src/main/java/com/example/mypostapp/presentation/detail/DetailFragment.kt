@@ -6,26 +6,22 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -38,7 +34,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import coil.compose.AsyncImage
-import coil.compose.rememberImagePainter
 import com.example.mypostapp.R
 import com.example.mypostapp.presentation.model.PostColor
 import kotlinx.coroutines.launch
@@ -64,6 +59,12 @@ class DetailFragment : Fragment() {
                 val imageList by viewModel.imageItems.collectAsState()
                 val imageUrls = imageList.map { it.imageUrl }
 
+                val selectedItem = remember {
+                    mutableStateOf(-1)
+                }
+                val onItemClick: (Int) -> Unit = { index ->
+                    selectedItem.value = index
+                }
 
                 val snackbarHostState = remember {
                     SnackbarHostState()
@@ -89,7 +90,12 @@ class DetailFragment : Fragment() {
                                 }
                             },
                             onAddButtonClick = {
-
+                                viewModel.savePostToDatabase(
+                                    description = noteText,
+                                    imageUrl = imageUrls[selectedItem.value],
+                                    color = selectedColor.name
+                                )
+                                Log.d("Database", "save")
                             }
                         )
                     }
@@ -97,28 +103,12 @@ class DetailFragment : Fragment() {
                     Column(
                         modifier = Modifier.padding(16.dp),
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(180.dp)
-                        ) {
-                            LazyRow {
-                                Log.d("Fragment", "Data")
-                                if (imageUrls.isNotEmpty()) {
-                                    Log.d("Fragment", "$imageUrls")
-                                    items(imageUrls) { image ->
-                                        Log.d("Fragment", "Data3")
-                                        AsyncImage(
-                                            model = image,
-                                            contentDescription = null,
-                                            placeholder = painterResource(R.drawable.image_note),
-                                            contentScale = ContentScale.Fit,
-                                            modifier = Modifier.padding(start = 16.dp, end = 16.dp)
-                                        )
-                                    }
-                                }
-                            }
-                        }
+                        SelectImageForPost(
+                            selectedItem = selectedItem.value,
+                            imageUrls = imageUrls,
+                            clickListener = onItemClick
+                        )
+
                         Spacer(modifier = Modifier.padding(bottom = 16.dp))
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
@@ -147,6 +137,40 @@ class DetailFragment : Fragment() {
     }
 }
 
+
+@Composable
+private fun SelectImageForPost(
+    imageUrls: List<String>,
+    selectedItem: Int,
+    clickListener: (Int) -> Unit
+) {
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(180.dp)
+    ) {
+        if (imageUrls.isNotEmpty()) {
+
+            itemsIndexed(imageUrls) { index, image ->
+                AsyncImage(
+                    model = image,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .border(
+                            width = 2.dp,
+                            color = if (index == selectedItem) Color.Red
+                            else Color.Transparent
+                        )
+                        .clickable {
+                            clickListener(index)
+                        }
+                )
+            }
+        }
+    }
+}
 
 @Composable
 private fun SelectColorForPost(
@@ -259,8 +283,7 @@ private fun NoteInput(onNoteEntered: (String) -> Unit) {
         value = noteValue.value,
         onValueChange = { noteValue.value = it },
         modifier = Modifier
-            .fillMaxSize()
-            .border(1.dp, Color.LightGray),
+            .fillMaxSize(),
         textStyle = TextStyle(fontSize = 16.sp),
         label = { Text("Введите заметку") },
         singleLine = false,
@@ -270,6 +293,34 @@ private fun NoteInput(onNoteEntered: (String) -> Unit) {
             unfocusedIndicatorColor = Color.Transparent
         )
     )
+}
+
+@Composable
+fun IconButtonPrevious(modifier: Modifier, onButtonClick: () -> Unit) {
+    IconButton(
+        onClick = { onButtonClick() },
+        modifier = Modifier.padding(16.dp)
+    ) {
+        Icon(
+            imageVector = Icons.Default.ArrowBack,
+            contentDescription = null,
+            tint = MaterialTheme.colors.primary
+        )
+    }
+}
+
+@Composable
+fun IconButtonNext(modifier: Modifier, onButtonClick: () -> Unit) {
+    IconButton(
+        onClick = { onButtonClick() },
+        modifier = Modifier.padding(16.dp)
+    ) {
+        Icon(
+            imageVector = Icons.Default.ArrowForward,
+            contentDescription = null,
+            tint = MaterialTheme.colors.primary
+        )
+    }
 }
 
 

@@ -1,15 +1,21 @@
 package com.example.mypostapp.data
 
+import android.app.Application
+import com.example.mypostapp.data.database.PostDataBase
 import com.example.mypostapp.data.mapper.PostModelMapper
-import com.example.mypostapp.data.network.ApiService
+import com.example.mypostapp.data.network.ApiFactory
 import com.example.mypostapp.domain.PostRepository
 import com.example.mypostapp.domain.model.ImageItem
 import com.example.mypostapp.domain.model.PostModel
 
 class PostRepositoryImpl(
-    private val apiService: ApiService,
-    private val mapper: PostModelMapper
+    application: Application
 ) : PostRepository {
+
+    private val apiService = ApiFactory.apiService
+    private val mapper = PostModelMapper()
+    private val postDao = PostDataBase.getInstance(application).getPostDao()
+
 
     override fun getAllPosts(): List<PostModel> {
         TODO("Not yet implemented")
@@ -20,11 +26,12 @@ class PostRepositoryImpl(
     }
 
     override suspend fun addNewPost(postModel: PostModel) {
-        TODO("Not yet implemented")
+        val postDbModel = mapper.mapPostModelToPostDbEntity(postModel)
+        postDao.addNewPostToDb(postDbModel)
     }
 
     override suspend fun getImagesData(): List<ImageItem> {
-        val response = apiService.getListImages(page = 1, limit = 50)
+        val response = apiService.getListImages(page = 2, limit = 50)
         if (response.isSuccessful) {
             val imagesDto = response.body()
             if (imagesDto != null) {

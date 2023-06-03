@@ -13,7 +13,7 @@ data class PostDbEntity(
     val description: String,
     @ColumnInfo(name = "image_url")
     val imageUrl: String,
-    val color: Int,
+    val color: String,
     @ColumnInfo(name = "creating_date")
     val creatingDate: Long
 
