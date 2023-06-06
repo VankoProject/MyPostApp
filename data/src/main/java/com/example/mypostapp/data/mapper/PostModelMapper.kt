@@ -10,19 +10,21 @@ class PostModelMapper {
     fun mapImagesDtoToImages(imagesDto: ImagesDto): List<ImageItem> =
         imagesDto.map { ImageItem(it.id, it.url) }
 
-    fun mapPostModelToPostDbEntity(postModel: PostModel): PostDbEntity =
-        PostDbEntity(
-            description = postModel.description,
-            imageUrl = postModel.imageUrl,
-            color = postModel.color,
-            creatingDate = postModel.date
+
+    companion object {
+        fun PostDbEntity.toPostModel(): PostModel = PostModel(
+            id = id,
+            description = description,
+            imageUrl = imageUrl,
+            color = color,
+            date = creatingDate
         )
 
-    fun mapDbEntityToPostModel(postDbEntity: PostDbEntity) = PostModel(
-        id = postDbEntity.id,
-        description = postDbEntity.description,
-        imageUrl = postDbEntity.imageUrl,
-        color = postDbEntity.color,
-        date = postDbEntity.creatingDate
-    )
+        fun PostModel.toPostDbEntity(): PostDbEntity = PostDbEntity(
+            description =description,
+            imageUrl = imageUrl,
+            color = color,
+            creatingDate = date
+        )
+    }
 }

@@ -2,7 +2,6 @@ package com.example.mypostapp.presentation.detail
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -35,7 +34,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import coil.compose.AsyncImage
 import com.example.mypostapp.R
-import com.example.mypostapp.presentation.model.PostColor
+import com.example.mypostapp.domain.model.PostColor
 import kotlinx.coroutines.launch
 
 
@@ -85,6 +84,11 @@ class DetailFragment : Fragment() {
                                         duration = SnackbarDuration.Long
                                     )
                                     if (action == SnackbarResult.ActionPerformed) {
+                                        viewModel.savePostToDatabase(
+                                            description = noteText,
+                                            imageUrl = imageUrls[selectedItem.value],
+                                            color = selectedColor.name
+                                        )
                                         findNavController().navigate(R.id.action_detailFragment_to_homeFragment)
                                     }
                                 }
@@ -95,7 +99,7 @@ class DetailFragment : Fragment() {
                                     imageUrl = imageUrls[selectedItem.value],
                                     color = selectedColor.name
                                 )
-                                Log.d("Database", "save")
+                                findNavController().navigate(R.id.action_detailFragment_to_homeFragment)
                             }
                         )
                     }
@@ -126,9 +130,9 @@ class DetailFragment : Fragment() {
                             )
                         }
                         Spacer(modifier = Modifier.padding(bottom = 16.dp))
-                        NoteInput(onNoteEntered = { note ->
+                        NoteInput(noteText = noteText)  { note ->
                             noteText = note
-                        })
+                        }
                         Spacer(modifier = Modifier.padding(bottom = 16.dp))
                     }
                 }
@@ -276,12 +280,14 @@ private fun DetailTopAppBar(
 
 
 @Composable
-private fun NoteInput(onNoteEntered: (String) -> Unit) {
-    val noteValue = remember { mutableStateOf("") }
+private fun NoteInput(
+    noteText:String,
+    onNoteEntered: (String) -> Unit) {
+
 
     TextField(
-        value = noteValue.value,
-        onValueChange = { noteValue.value = it },
+        value = noteText,
+        onValueChange = { onNoteEntered(it) },
         modifier = Modifier
             .fillMaxSize(),
         textStyle = TextStyle(fontSize = 16.sp),

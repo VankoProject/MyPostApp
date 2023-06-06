@@ -5,7 +5,7 @@ import androidx.room.*
 @Dao
 interface PostDao {
     @Query("SELECT * FROM posts")
-    fun getAllPosts(): List<PostDbEntity>
+    suspend fun getAllPosts(): List<PostDbEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addNewPostToDb(postDbEntity: PostDbEntity)

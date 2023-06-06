@@ -3,6 +3,8 @@ package com.example.mypostapp.data
 import android.app.Application
 import com.example.mypostapp.data.database.PostDataBase
 import com.example.mypostapp.data.mapper.PostModelMapper
+import com.example.mypostapp.data.mapper.PostModelMapper.Companion.toPostDbEntity
+import com.example.mypostapp.data.mapper.PostModelMapper.Companion.toPostModel
 import com.example.mypostapp.data.network.ApiFactory
 import com.example.mypostapp.domain.PostRepository
 import com.example.mypostapp.domain.model.ImageItem
@@ -17,17 +19,18 @@ class PostRepositoryImpl(
     private val postDao = PostDataBase.getInstance(application).getPostDao()
 
 
-    override fun getAllPosts(): List<PostModel> {
-        TODO("Not yet implemented")
+    override suspend fun getAllPosts(): List<PostModel> {
+        return postDao.getAllPosts()
+            .map { it.toPostModel() }
+
     }
 
     override suspend fun deletePost(postModel: PostModel) {
-        TODO("Not yet implemented")
+        postDao.deletePostFromDb(postModel.toPostDbEntity())
     }
 
     override suspend fun addNewPost(postModel: PostModel) {
-        val postDbModel = mapper.mapPostModelToPostDbEntity(postModel)
-        postDao.addNewPostToDb(postDbModel)
+        postDao.addNewPostToDb(postModel.toPostDbEntity())
     }
 
     override suspend fun getImagesData(): List<ImageItem> {

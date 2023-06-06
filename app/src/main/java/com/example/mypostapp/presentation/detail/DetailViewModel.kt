@@ -52,5 +52,4 @@ class DetailViewModel(application: Application) : AndroidViewModel(application) 
                 ))
         }
     }
-
 }

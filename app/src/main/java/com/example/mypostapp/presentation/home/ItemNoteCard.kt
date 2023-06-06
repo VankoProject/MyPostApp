@@ -1,6 +1,6 @@
 package com.example.mypostapp.presentation.home
 
-import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -11,31 +11,36 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.mypostapp.presentation.model.PostModel
+import coil.compose.AsyncImage
+import com.example.mypostapp.domain.model.PostModel
+import com.example.mypostapp.presentation.getColorFromPostColor
+import java.text.SimpleDateFormat
 import java.util.*
 
 
 @Composable
 fun ItemNoteCard(
     postModel: PostModel,
-    onClick: () -> Unit) {
+    onClick: () -> Unit
+) {
+
+    val backgroundColor: Color = getColorFromPostColor(postModel.color)
+
     Card(
-        backgroundColor = postModel.color,
         modifier = Modifier
             .fillMaxWidth()
             .height(80.dp)
             .clickable(onClick = onClick),
-
         shape = RoundedCornerShape(16.dp),
         contentColor = Color.Black,
-        elevation = 2.dp
     ) {
-        Row {
+        Row(
+            modifier = Modifier.background(backgroundColor)
+        ) {
             ItemImageNote(postModel = postModel)
             Spacer(modifier = Modifier.width(16.dp))
             ItemNoteData(postModel = postModel)
@@ -46,8 +51,8 @@ fun ItemNoteCard(
 
 @Composable
 fun ItemImageNote(postModel: PostModel) {
-    Image(
-        painter = painterResource(id = postModel.image),
+    AsyncImage(
+        model = postModel.imageUrl,
         contentDescription = null,
         contentScale = ContentScale.Fit
     )
@@ -58,7 +63,8 @@ fun ItemImageNote(postModel: PostModel) {
 fun ItemNoteData(
     postModel: PostModel
 ) {
-    val currentDate = Date()
+    val currentDate = postModel.date
+    val formatDate = convertTimestampToDateTime(timestamp = currentDate)
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -83,10 +89,17 @@ fun ItemNoteData(
             horizontalArrangement = Arrangement.End
         ) {
             Text(
-                text = postModel.date.format(currentDate),
+                text = formatDate,
                 fontSize = 8.sp,
                 fontWeight = FontWeight.Normal
             )
         }
     }
+}
+
+@Composable
+fun convertTimestampToDateTime(timestamp: Long): String {
+    val dateFormat = SimpleDateFormat("dd.MM.yyyy HH:mm:ss", Locale.getDefault())
+    val date = Date(timestamp)
+    return dateFormat.format(date)
 }

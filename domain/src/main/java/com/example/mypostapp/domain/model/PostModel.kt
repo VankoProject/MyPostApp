@@ -6,7 +6,9 @@ data class PostModel(
     val imageUrl: String,
     val color: String,
     val date: Long
-)
+) {
+
+}
 
 enum class PostColor() {
     RED,
@@ -15,3 +17,7 @@ enum class PostColor() {
     YELLOW,
     GREY
 }
+
+
+
+
