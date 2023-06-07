@@ -7,6 +7,9 @@ interface PostDao {
     @Query("SELECT * FROM posts")
     suspend fun getAllPosts(): List<PostDbEntity>
 
+    @Query("SELECT * FROM posts WHERE id =:postId")
+    suspend fun getPost(postId: Long): PostDbEntity
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addNewPostToDb(postDbEntity: PostDbEntity)
 

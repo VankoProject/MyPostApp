@@ -32,15 +32,19 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.navArgs
 import coil.compose.AsyncImage
 import com.example.mypostapp.R
 import com.example.mypostapp.domain.model.PostColor
+import com.example.mypostapp.presentation.getColorFromPostColor
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 
 class DetailFragment : Fragment() {
 
     private val viewModel: DetailViewModel by viewModels()
+    private val args: DetailFragmentArgs by navArgs()
 
 
     @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
@@ -50,6 +54,8 @@ class DetailFragment : Fragment() {
     ): View {
         return ComposeView(requireContext()).apply {
             setContent {
+                val postId = args.postId
+
                 val colorItems = PostColor.values()
                 var selectedColor by remember { mutableStateOf(colorItems[0]) }
                 var expanded by remember { mutableStateOf(false) }
@@ -59,7 +65,7 @@ class DetailFragment : Fragment() {
                 val imageUrls = imageList.map { it.imageUrl }
 
                 val selectedItem = remember {
-                    mutableStateOf(-1)
+                    mutableStateOf(0)
                 }
                 val onItemClick: (Int) -> Unit = { index ->
                     selectedItem.value = index
@@ -67,6 +73,15 @@ class DetailFragment : Fragment() {
 
                 val snackbarHostState = remember {
                     SnackbarHostState()
+                }
+
+                viewModel.getDetailPostFromDb(postId = postId)
+                lifecycleScope.launch {
+                    viewModel.postState.collect { postModel ->
+                        postModel?.let { post ->
+                            noteText = post.description
+                        }
+                    }
                 }
 
 
@@ -284,7 +299,6 @@ private fun NoteInput(
     noteText:String,
     onNoteEntered: (String) -> Unit) {
 
-
     TextField(
         value = noteText,
         onValueChange = { onNoteEntered(it) },
@@ -300,6 +314,7 @@ private fun NoteInput(
         )
     )
 }
+
 
 @Composable
 fun IconButtonPrevious(modifier: Modifier, onButtonClick: () -> Unit) {

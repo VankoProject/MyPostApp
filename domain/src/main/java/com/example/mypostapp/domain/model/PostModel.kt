@@ -10,7 +10,7 @@ data class PostModel(
 
 }
 
-enum class PostColor() {
+enum class PostColor {
     RED,
     BLUE,
     GREEN,

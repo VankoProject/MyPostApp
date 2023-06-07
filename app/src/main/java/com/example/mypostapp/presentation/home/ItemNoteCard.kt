@@ -76,8 +76,8 @@ fun ItemNoteData(
     ) {
         Text(
             text = postModel.description,
-            fontSize = 10.sp,
-            fontWeight = FontWeight.Light,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Normal,
             modifier = Modifier
                 .fillMaxWidth(),
             maxLines = 2,

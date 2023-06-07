@@ -25,6 +25,10 @@ class PostRepositoryImpl(
 
     }
 
+    override suspend fun getDetailPost(postId: Long): PostModel {
+        return postDao.getPost(postId).toPostModel()
+    }
+
     override suspend fun deletePost(postModel: PostModel) {
         postDao.deletePostFromDb(postModel.toPostDbEntity())
     }

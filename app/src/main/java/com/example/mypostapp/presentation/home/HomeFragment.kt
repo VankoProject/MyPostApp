@@ -34,6 +34,7 @@ class HomeFragment : Fragment() {
 
     private val viewModel by viewModels<HomeViewModel>()
 
+
     @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
