@@ -1,13 +1,14 @@
 package com.example.mypostapp.data.database
 
-import androidx.room.Delete
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
+import androidx.room.*
 
+@Dao
 interface PostDao {
     @Query("SELECT * FROM posts")
-    fun getAllPosts(): List<PostDbEntity>
+    suspend fun getAllPosts(): List<PostDbEntity>
+
+    @Query("SELECT * FROM posts WHERE id =:postId")
+    suspend fun getPost(postId: Long): PostDbEntity
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addNewPostToDb(postDbEntity: PostDbEntity)

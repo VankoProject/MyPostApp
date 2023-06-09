@@ -1,33 +1,34 @@
 package com.example.mypostapp.presentation.home
 
-import androidx.compose.ui.graphics.Color
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import com.example.mypostapp.R
-import com.example.mypostapp.presentation.model.PostModel
-import java.text.SimpleDateFormat
-import java.util.*
+import android.app.Application
+import android.content.ContentValues.TAG
+import android.util.Log
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.mypostapp.data.PostRepositoryImpl
+import com.example.mypostapp.domain.model.PostModel
+import com.example.mypostapp.domain.usecases.GetAllPostsUseCase
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
-class HomeViewModel: ViewModel() {
+class HomeViewModel(application: Application): AndroidViewModel(application) {
 
-    private val initialPostsList = mutableListOf<PostModel>().apply {
-        repeat(50) {
-            add(
-                PostModel(
-                    id = it,
-                    description = "But I must explain to you how all this mistaken idea of denouncing pleasure and praising pain was born and I will give you a complete account of the system, and expound the actual teachings of the great explorer of the truth, the master-builder of human happiness. No one rejects, dislikes, or avoids pleasure itself, because it is pleasure, but because those who do not know how to pursue pleasure rationally encounter consequences that are extremely painful.",
-                    image = R.drawable.image_note,
-                    color = Color(255,
-                        (0..255).random(),
-                        (0..255).random(),
-                        (0..255).random()),
-                    date = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
-                )
-            )
+    private val repository = PostRepositoryImpl(application = application)
+    private val getAllPostsUseCase = GetAllPostsUseCase(repository)
+
+
+    private val _postModels = MutableStateFlow<List<PostModel>>(emptyList())
+    val postModels: StateFlow<List<PostModel>> get() = _postModels
+
+    fun getAllPosts() {
+        viewModelScope.launch {
+            try {
+                val listPosts = getAllPostsUseCase.invoke()
+                _postModels.value = listPosts
+            } catch (e: Exception) {
+                Log.e(TAG, "Ошибка при получении списка записок", e)
+            }
         }
     }
-
-    private val _postModels = MutableLiveData<List<PostModel>>(initialPostsList)
-    val postModels: LiveData<List<PostModel>> = _postModels
 }

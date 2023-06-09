@@ -34,6 +34,6 @@
             app:destination="@id/homeFragment" />
         <argument
             android:name="postId"
-            app:argType="integer" />
+            app:argType="long" />
     </fragment>
 </navigation>

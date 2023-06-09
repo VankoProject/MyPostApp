@@ -10,6 +10,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -17,6 +18,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
@@ -27,14 +29,23 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.navArgs
+import coil.compose.AsyncImage
 import com.example.mypostapp.R
-import com.example.mypostapp.presentation.model.PostColor
+import com.example.mypostapp.domain.model.PostColor
+import com.example.mypostapp.presentation.getColorFromPostColor
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 
 class DetailFragment : Fragment() {
+
+    private val viewModel: DetailViewModel by viewModels()
+    private val args: DetailFragmentArgs by navArgs()
+
 
     @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
     override fun onCreateView(
@@ -43,14 +54,36 @@ class DetailFragment : Fragment() {
     ): View {
         return ComposeView(requireContext()).apply {
             setContent {
+                val postId = args.postId
+
                 val colorItems = PostColor.values()
                 var selectedColor by remember { mutableStateOf(colorItems[0]) }
                 var expanded by remember { mutableStateOf(false) }
                 var noteText by remember { mutableStateOf("") }
 
+                val imageList by viewModel.imageItems.collectAsState()
+                val imageUrls = imageList.map { it.imageUrl }
+
+                val selectedItem = remember {
+                    mutableStateOf(0)
+                }
+                val onItemClick: (Int) -> Unit = { index ->
+                    selectedItem.value = index
+                }
+
                 val snackbarHostState = remember {
                     SnackbarHostState()
                 }
+
+                viewModel.getDetailPostFromDb(postId = postId)
+                lifecycleScope.launch {
+                    viewModel.postState.collect { postModel ->
+                        postModel?.let { post ->
+                            noteText = post.description
+                        }
+                    }
+                }
+
 
                 Scaffold(
                     snackbarHost = {
@@ -60,17 +93,28 @@ class DetailFragment : Fragment() {
                         DetailTopAppBar(
                             onBackButtonClick = {
                                 lifecycleScope.launch {
-                                   val action = snackbarHostState.showSnackbar(
+                                    val action = snackbarHostState.showSnackbar(
                                         message = "Do you want to save post?",
                                         actionLabel = "Save post",
-                                        duration = SnackbarDuration.Long)
+                                        duration = SnackbarDuration.Long
+                                    )
                                     if (action == SnackbarResult.ActionPerformed) {
+                                        viewModel.savePostToDatabase(
+                                            description = noteText,
+                                            imageUrl = imageUrls[selectedItem.value],
+                                            color = selectedColor.name
+                                        )
                                         findNavController().navigate(R.id.action_detailFragment_to_homeFragment)
                                     }
                                 }
                             },
                             onAddButtonClick = {
-
+                                viewModel.savePostToDatabase(
+                                    description = noteText,
+                                    imageUrl = imageUrls[selectedItem.value],
+                                    color = selectedColor.name
+                                )
+                                findNavController().navigate(R.id.action_detailFragment_to_homeFragment)
                             }
                         )
                     }
@@ -78,16 +122,12 @@ class DetailFragment : Fragment() {
                     Column(
                         modifier = Modifier.padding(16.dp),
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(180.dp)
-                                .background(Color.Red.copy(alpha = 0.5f))
-                        ) {
-                            LazyRow {
-                                item { }
-                            }
-                        }
+                        SelectImageForPost(
+                            selectedItem = selectedItem.value,
+                            imageUrls = imageUrls,
+                            clickListener = onItemClick
+                        )
+
                         Spacer(modifier = Modifier.padding(bottom = 16.dp))
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
@@ -105,12 +145,47 @@ class DetailFragment : Fragment() {
                             )
                         }
                         Spacer(modifier = Modifier.padding(bottom = 16.dp))
-                        NoteInput(onNoteEntered = { note ->
+                        NoteInput(noteText = noteText)  { note ->
                             noteText = note
-                        })
+                        }
                         Spacer(modifier = Modifier.padding(bottom = 16.dp))
                     }
                 }
+            }
+        }
+    }
+}
+
+
+@Composable
+private fun SelectImageForPost(
+    imageUrls: List<String>,
+    selectedItem: Int,
+    clickListener: (Int) -> Unit
+) {
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(180.dp)
+    ) {
+        if (imageUrls.isNotEmpty()) {
+
+            itemsIndexed(imageUrls) { index, image ->
+                AsyncImage(
+                    model = image,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .border(
+                            width = 2.dp,
+                            color = if (index == selectedItem) Color.Red
+                            else Color.Transparent
+                        )
+                        .clickable {
+                            clickListener(index)
+                        }
+                )
             }
         }
     }
@@ -220,15 +295,15 @@ private fun DetailTopAppBar(
 
 
 @Composable
-private fun NoteInput(onNoteEntered: (String) -> Unit) {
-    val noteValue = remember { mutableStateOf("") }
+private fun NoteInput(
+    noteText:String,
+    onNoteEntered: (String) -> Unit) {
 
     TextField(
-        value = noteValue.value,
-        onValueChange = { noteValue.value = it },
+        value = noteText,
+        onValueChange = { onNoteEntered(it) },
         modifier = Modifier
-            .fillMaxSize()
-            .border(1.dp, Color.LightGray),
+            .fillMaxSize(),
         textStyle = TextStyle(fontSize = 16.sp),
         label = { Text("Введите заметку") },
         singleLine = false,
@@ -239,6 +314,36 @@ private fun NoteInput(onNoteEntered: (String) -> Unit) {
         )
     )
 }
+
+
+@Composable
+fun IconButtonPrevious(modifier: Modifier, onButtonClick: () -> Unit) {
+    IconButton(
+        onClick = { onButtonClick() },
+        modifier = Modifier.padding(16.dp)
+    ) {
+        Icon(
+            imageVector = Icons.Default.ArrowBack,
+            contentDescription = null,
+            tint = MaterialTheme.colors.primary
+        )
+    }
+}
+
+@Composable
+fun IconButtonNext(modifier: Modifier, onButtonClick: () -> Unit) {
+    IconButton(
+        onClick = { onButtonClick() },
+        modifier = Modifier.padding(16.dp)
+    ) {
+        Icon(
+            imageVector = Icons.Default.ArrowForward,
+            contentDescription = null,
+            tint = MaterialTheme.colors.primary
+        )
+    }
+}
+
 
 
 

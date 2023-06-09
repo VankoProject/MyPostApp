@@ -1,17 +1,23 @@
 package com.example.mypostapp.domain.model
 
 data class PostModel(
-    val id: Int,
+    val id: Long,
     val description: String,
-    val image: String,
-    val color: PostColor,
+    val imageUrl: String,
+    val color: String,
     val date: Long
-)
+) {
 
-enum class PostColor() {
+}
+
+enum class PostColor {
     RED,
     BLUE,
     GREEN,
     YELLOW,
     GREY
 }
+
+
+
+

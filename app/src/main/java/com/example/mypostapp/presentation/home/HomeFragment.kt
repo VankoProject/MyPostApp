@@ -13,7 +13,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -23,15 +24,16 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import com.example.mypostapp.R
-import kotlinx.coroutines.launch
+import com.example.mypostapp.domain.model.PostModel
+import java.util.*
 
 
 class HomeFragment : Fragment() {
 
     private val viewModel by viewModels<HomeViewModel>()
+
 
     @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
     override fun onCreateView(
@@ -52,14 +54,16 @@ class HomeFragment : Fragment() {
                     },
                     floatingActionButton = {
                         Fab {
-                            lifecycleScope.launch {
-                                snackbarHostState.showSnackbar("Hello")
-                            }
+                            findNavController().navigate(R.id.action_homeFragment_to_detailFragment)
                         }
                     },
                     floatingActionButtonPosition = FabPosition.End
                 ) {
-                    val currentList = viewModel.postModels.observeAsState(listOf())
+                    viewModel.getAllPosts()
+
+                    val currentList: List<PostModel> by viewModel.postModels.collectAsState(
+                        emptyList()
+                    )
                     LazyColumn(
                         contentPadding = PaddingValues(
                             top = 16.dp,
@@ -71,7 +75,7 @@ class HomeFragment : Fragment() {
                         modifier = Modifier
                             .fillMaxWidth()
                     ) {
-                        items(currentList.value) { model ->
+                        items(currentList) { model ->
                             ItemNoteCard(
                                 postModel = model,
                                 onClick = {
@@ -92,6 +96,9 @@ class HomeFragment : Fragment() {
             }
         }
     }
+
+
+
 }
 
 @Composable

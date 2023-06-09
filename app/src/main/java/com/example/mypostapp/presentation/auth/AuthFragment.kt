@@ -1,5 +1,6 @@
 package com.example.mypostapp.presentation.auth
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
@@ -50,6 +51,7 @@ class AuthFragment : Fragment(R.layout.fragment_auth) {
 
     private fun createTextWatcher(): TextWatcher {
         return object : MyTextWatcher() {
+            @SuppressLint("SuspiciousIndentation")
             @RequiresApi(Build.VERSION_CODES.Q)
             override fun afterTextChanged(s: Editable?) {
                 with(binding) {
@@ -70,7 +72,7 @@ class AuthFragment : Fragment(R.layout.fragment_auth) {
                             tilEmail.error = null
                         }
                     }
-                    etEmail.textCursorDrawable =
+                  etEmail.textCursorDrawable =
                         ContextCompat.getDrawable(requireContext(), R.drawable.custom_cursor)
 
                     etPassword.setOnFocusChangeListener { _, hasFocus ->
